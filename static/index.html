@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Capture</title>
+    <style>
+        #webcam {
+            width: 100%;
+            max-width: 640px;
+            margin: 20px auto;
+            border: 2px solid black;
+        }
+        #capture-btn {
+            display: block;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Capture Face</h1>
+    <!-- Video element for webcam -->
+    <video id="webcam" autoplay></video>
+    <!-- Button to capture image -->
+    <button id="capture-btn">Capture</button>
+    <!-- Canvas element to show the captured image (hidden) -->
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <script>
+        // Get the video and canvas elements
+        const webcam = document.getElementById('webcam');
+        const captureBtn = document.getElementById('capture-btn');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Start the webcam feed
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                webcam.srcObject = stream;
+            })
+            .catch(error => {
+                alert('Could not access webcam.');
+            });
+
+        // Capture the image when the button is clicked
+        captureBtn.addEventListener('click', () => {
+            // Set canvas size to match video feed
+            canvas.width = webcam.videoWidth;
+            canvas.height = webcam.videoHeight;
+
+            // Draw the current frame from the video feed onto the canvas
+            ctx.drawImage(webcam, 0, 0, canvas.width, canvas.height);
+
+            // Convert canvas to data URL (image in base64 format)
+            const imageDataUrl = canvas.toDataURL('image/png');
+
+            // Send the captured image to Flask backend via POST
+            fetch('/recognize', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image: imageDataUrl })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle face recognition result
+                alert("Recognized faces: " + data.face_names.join(", "));
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
+        });
+    </script>
+</body>
+</html>

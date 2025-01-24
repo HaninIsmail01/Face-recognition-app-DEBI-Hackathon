@@ -1,16 +1,17 @@
+from flask import Blueprint, request, jsonify, current_app
 import base64
-from io import BytesIO
-from flask import Blueprint, request, jsonify
 from app.recognition import recognize_face
 from PIL import Image
 import numpy as np
 
 app_routes = Blueprint('app_routes', __name__)
 
+# Route to serve index.html from the 'static' folder
 @app_routes.route('/')
 def index():
-    return app.send_static_file('index.html')
+    return current_app.send_static_file('index.html')
 
+# Route to handle face recognition
 @app_routes.route('/recognize', methods=['POST'])
 def recognize():
     try:
@@ -19,7 +20,7 @@ def recognize():
         image_data = data['image']
 
         # Decode the base64 image
-        image_data = image_data.split(",")[1]  # Remove the "data:image/jpeg;base64," part
+        image_data = image_data.split(",")[1]  # Remove the "data:image/png;base64," part
         img_bytes = base64.b64decode(image_data)
         img = Image.open(BytesIO(img_bytes))
         

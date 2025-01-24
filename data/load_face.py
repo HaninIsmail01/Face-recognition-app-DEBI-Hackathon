@@ -1,7 +1,10 @@
+import sys
+sys.path.append('/workspaces/Face-recognition-app-DEBI-Hackathon/app')
+
 import os
 import dlib
 import numpy as np
-from app.database import add_face
+from database import add_face
 
 # Load face detector and shape predictor
 detector = dlib.get_frontal_face_detector()
